@@ -20,6 +20,51 @@ function authResponse(user) {
   };
 }
 
+async function verifyGoogleToken(token) {
+  const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(token)}`);
+  if (!response.ok) throw new Error('Invalid Google token');
+
+  const payload = await response.json();
+  if (payload.aud !== process.env.GOOGLE_CLIENT_ID) throw new Error('Google token audience mismatch');
+  if (payload.iss !== 'https://accounts.google.com' && payload.iss !== 'accounts.google.com') {
+    throw new Error('Invalid Google issuer');
+  }
+  if (payload.email_verified !== 'true' && payload.email_verified !== true) {
+    throw new Error('Google email is not verified');
+  }
+
+  return payload;
+}
+
+router.post('/google', async (req, res) => {
+  const { token } = req.body;
+  if (!token) return res.status(400).json({ error: 'Google token is required' });
+
+  try {
+    const payload = await verifyGoogleToken(token);
+    const email = payload.email?.toLowerCase();
+    if (!email) return res.status(400).json({ error: 'Google account email is missing' });
+
+    let user = await User.findOne({ email });
+    if (user) {
+      if (!user.googleId) {
+        user.googleId = payload.sub;
+        await user.save();
+      }
+    } else {
+      user = await User.create({
+        name: payload.name || email.split('@')[0],
+        email,
+        googleId: payload.sub
+      });
+    }
+
+    res.json(authResponse(user));
+  } catch (err) {
+    res.status(401).json({ error: err.message || 'Google authentication failed' });
+  }
+});
+
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 

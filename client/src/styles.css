@@ -322,6 +322,36 @@ main {
   gap: 16px;
 }
 
+.social-signin-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #667085;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.social-signin-divider::before,
+.social-signin-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #dbe2ea;
+}
+
+.google-login-row {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 10px;
+}
+
+.google-login-row > div {
+  width: 100%;
+  max-width: 320px;
+}
+
 .guest-button {
   min-height: 58px;
   display: flex;

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, BarChart3, Link2, LogIn, ShieldCheck, UserPlus } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 import { api } from '../lib/api.js';
 
 const initialForm = {
@@ -74,6 +75,33 @@ export default function Auth({ onAuth, onGuest }) {
             <UserPlus size={16} />
             Sign up
           </button>
+        </div>
+
+        <div className="social-signin-divider">
+          <span>or continue with Google</span>
+        </div>
+        <div className="google-login-row">
+          <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              const token = credentialResponse.credential;
+              if (!token) {
+                setError('Google login failed');
+                return;
+              }
+              setLoading(true);
+              setError('');
+
+              try {
+                const { data } = await api.post('/api/auth/google', { token });
+                onAuth(data);
+              } catch (err) {
+                setError(err.response?.data?.error || 'Google authentication failed');
+              } finally {
+                setLoading(false);
+              }
+            }}
+            onError={() => setError('Google authentication failed')}
+          />
         </div>
 
         <form className="auth-form" onSubmit={submit}>
