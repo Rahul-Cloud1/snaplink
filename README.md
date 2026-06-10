@@ -1,42 +1,57 @@
 # URL Shortener with Analytics Dashboard
 
-A production-grade URL shortener inspired by bit.ly, built to show the system design tradeoffs behind fast redirects, abuse prevention, and analytics pipelines.
+A production-grade URL shortener inspired by Bitly, built to demonstrate a complete SaaS workflow with fast redirects, analytics, auth, abuse prevention, and modern React UI.
 
-## The Problem
+## Why this project stands out
 
-Every redirect can become a database query. At scale, millions of redirects per day turn that simple lookup into a performance bottleneck. This project explores how caching, async processing, and rate limiting solve that while keeping the product experience polished.
+This application is designed to be interview-ready by combining:
 
-## Features
+- Real product UX with link creation, dashboards, per-link analytics, and QR generation
+- Fast server-side redirects using Redis cache
+- Background analytics ingestion with BullMQ and Redis queues
+- Secure authentication using JWT and Google OAuth login
+- Rate limiting and abuse protection for anonymous and authenticated users
+- A modern React/Vite frontend with charts and dashboard flows
 
-- Create short links with 6-character nanoid slugs
-- Optional custom slugs
-- Link expiry dates
-- Redis-backed redirect cache with a 24 hour TTL
-- BullMQ click tracking so redirects do not wait on analytics writes
-- MongoDB click analytics with country, city, device, browser, referrer, and IP
-- Rate limiting: 10 creates/hour per anonymous IP and 100 creates/hour per authenticated user
-- Dashboard for all links with click counts, QR codes, copy, open, and delete actions
-- Per-link analytics charts for clicks over time, top countries, device mix, and referrers
-- JWT authentication endpoints
+## Core Features
 
-## Architecture Decisions
+- Shorten URLs using random 6-character `nanoid` slugs
+- Optional custom slugs and link expiration dates
+- Fast redirect performance with Redis lookup cache
+- Authenticated user sessions with JWT token issuance
+- Google Sign-In integration with automatic account creation
+- Automatic onboarding of Google users on first login
+- Persistent analytics with click tracking by device, browser, country, referrer, and IP
+- Background click ingestion via BullMQ worker to keep redirects fast
+- Dashboard listing with copy, open, delete, and QR code actions
+- Per-link analytics: click timeline, country breakdown, device mix, and referrer insights
+- Rate limits for anonymous users and authenticated users
+- Anonymous link ownership using local `x-owner-key` tracking
 
-**Why Redis for caching?** MongoDB queries usually take milliseconds; Redis lookups are typically sub-millisecond. For a URL shortener, redirect speed is the product. With Redis, active links avoid repeated database reads.
+## Latest additions
 
-**Why BullMQ for click tracking?** Click tracking is not required to complete a redirect. Pushing click events to a queue lets the API redirect immediately while a worker writes analytics in the background.
-
-**Why nanoid over sequential IDs?** Sequential IDs are predictable, which makes it easy to enumerate private or obscure links. Nanoid produces random, non-sequential slugs.
-
-**Why denormalize `totalClicks` onto `Link`?** Counting click documents on every dashboard load is slow as data grows. Incrementing `totalClicks` in the worker keeps dashboard reads O(1).
+- `Continue with Google` login button in the React auth page
+- Backend `/api/auth/google` endpoint for Google ID token verification
+- Automatic user creation when a Google account logs in for the first time
+- JWT-based session handling returned after social login
 
 ## Tech Stack
 
 - Backend: Node.js, Express, MongoDB, Mongoose
-- Cache and queue: Redis, BullMQ
-- Auth and abuse prevention: JWT, bcrypt, express-rate-limit, Redis store
+- Queue + cache: Redis, BullMQ
+- Auth: JWT, bcrypt, Google OAuth
 - Frontend: React, Vite, React Router, Recharts, qrcode.react
+- Utilities: validator, geoip-lite, express-rate-limit
 
-## Project Structure
+## Architecture highlights
+
+- `Redis` is used to speed up redirect lookups and reduce MongoDB read pressure
+- `BullMQ` moves click analytics writes out of the request path, enabling fast redirects
+- `MongoDB` stores link and click audit data while `Link.totalClicks` is denormalized for dashboard performance
+- `Google OAuth` is implemented via client-side token exchange and secure backend verification
+- `JWT` authorizes protected API routes and keeps session logic simple
+
+## Project structure
 
 ```text
 server/
@@ -55,59 +70,101 @@ server/
     index.js
 client/
   src/
-    components/Charts/
-    components/LinkCard.jsx
+    components/
+      Charts/
+        ClickLineChart.jsx
+        CountryBarChart.jsx
+        DevicePieChart.jsx
+      LinkCard.jsx
     lib/api.js
-    pages/Home.jsx
-    pages/Dashboard.jsx
-    pages/Analytics.jsx
+    pages/
+      Auth.jsx
+      Analytics.jsx
+      Dashboard.jsx
+      Home.jsx
     App.jsx
+    main.jsx
+    styles.css
 ```
 
-## Run Locally
+## Setup
 
-Start MongoDB and Redis locally, then create environment files:
+1. Copy environment files:
 
 ```bash
-cp server/.env.example server/.env
-cp client/.env.example client/.env
-npm install
-npm run install:all
+copy server\.env.example server\.env
+copy client\.env.example client\.env
 ```
 
-Run the API, worker, and frontend:
+2. Install dependencies:
 
 ```bash
+cd server && npm install
+cd ..\client && npm install
+```
+
+3. Configure local env values:
+
+- `server/.env`
+  - `PORT`
+  - `CLIENT_URL`
+  - `PUBLIC_BASE_URL`
+  - `MONGODB_URI`
+  - `REDIS_URL`
+  - `JWT_SECRET`
+  - `GOOGLE_CLIENT_ID`
+- `client/.env`
+  - `VITE_API_URL`
+  - `VITE_GOOGLE_CLIENT_ID`
+
+4. Run the services:
+
+```bash
+# In server folder
 npm run dev
-npm run start:worker
+
+# In another terminal, run the worker
+npm run worker
+
+# In client folder
+npm run dev
 ```
 
-The frontend runs on `http://localhost:5173` and the API runs on `http://localhost:5000`.
+## Running locally
 
-## API Overview
+- Frontend: `http://localhost:5173`
+- API: `http://localhost:5000`
+
+## API endpoints
 
 ```http
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/google
+GET /api/auth/me
 POST /api/shorten
 GET /:slug
 GET /api/shorten/links
 DELETE /api/shorten/links/:slug
-GET /api/shorten/links/:slug/qr
 GET /api/analytics/:slug?range=7d
-POST /api/auth/register
-POST /api/auth/login
-GET /api/auth/me
 ```
 
-Anonymous dashboard ownership uses a browser-local `x-owner-key` header. Authenticated requests use `Authorization: Bearer <token>`.
+## Interview-friendly talking points
 
-## What I Would Do Differently at Scale
+- Implemented a full product-ready URL shortener with both password and Google OAuth login
+- Designed the system to prioritize redirect latency and separate analytics ingestion from the critical path
+- Used Redis and BullMQ to scale redirects and click tracking
+- Built a modern dashboard with charts, QR code generation, and a polished React experience
+- Added abuse prevention using rate limiting and anonymous ownership
 
-- Move analytics to a time-series database such as TimescaleDB or InfluxDB
-- Add a CDN or edge worker layer in front of hot redirects
-- Shard MongoDB by slug prefix for horizontal scale
-- Add dead-letter queue inspection and replay tooling
-- Hash or truncate stored IP addresses for stricter privacy posture
+## Future scaling ideas
 
-## Resume Bullet
+- Add a CDN or edge layer for ultra-fast redirect delivery
+- Move analytics storage to a time-series database for large-scale reporting
+- Add multi-tenant support and role-based access controls
+- Add replay tooling for failed analytics jobs
+- Introduce IP hashing and GDPR-safe analytics storage
 
-Built a production-grade URL shortener with Redis caching, BullMQ async click tracking, and a real-time analytics dashboard, reducing simulated redirect latency versus a naive DB-only implementation; includes rate limiting, geo-IP tracking, QR codes, and device analytics.
+## Resume-ready summary
+
+Production-ready URL shortener with Redis caching, BullMQ async analytics, JWT and Google OAuth authentication, and a React analytics dashboard that tracks clicks by geography, device, browser, and referrer.
