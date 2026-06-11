@@ -92,7 +92,7 @@ git status
 # Should NOT show .env in changes
 
 # Verify no secrets in code
-grep -r "snaplink2004" . --exclude-dir=node_modules
+grep -r "snaplink" . --exclude-dir=node_modules
 # Should only show in .env (not tracked)
 ```
 
@@ -145,11 +145,11 @@ You should see 3 services:
 ```env
 NODE_ENV=production
 PORT=3000
-MONGODB_URI=mongodb+srv://snaplink:snaplink2004@cluster0.mqcdswo.mongodb.net/url_shortener?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://snaplink:YOUR_PASSWORD@cluster0.mqcdswo.mongodb.net/url_shortener?retryWrites=true&w=majority
 REDIS_URL=redis://:YOUR_PASSWORD@one-hedgehog-99858.upstash.io:6379
 JWT_SECRET=YOUR_GENERATED_HEX_STRING
-GOOGLE_CLIENT_ID=your_google_client_id_from_console
-GOOGLE_CLIENT_SECRET=your_google_client_secret_from_console
+GOOGLE_CLIENT_ID=your_client_id_from_console
+GOOGLE_CLIENT_SECRET=your_client_secret_from_console
 CLIENT_URL=<will_update_after_frontend_deployed>
 ```
 

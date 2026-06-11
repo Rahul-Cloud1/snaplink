@@ -1,10 +1,10 @@
 # Railway Deployment - Your Quick Reference
 
-## Your Credentials (Safe to Use)
+## Your Credentials (Stored Safely in .env)
 
 ```
-✅ MongoDB: mongodb+srv://snaplink:snaplink2004@cluster0.mqcdswo.mongodb.net/
-✅ Upstash Redis: one-hedgehog-99858.upstash.io
+✅ MongoDB: snaplink cluster (credentials in .env)
+✅ Upstash Redis: one-hedgehog-99858.upstash.io (credentials in .env)
 ✅ Ready for deployment!
 ```
 
@@ -67,7 +67,7 @@ You should see:
 |-----|-------|
 | `NODE_ENV` | `production` |
 | `PORT` | `3000` |
-| `MONGODB_URI` | `mongodb+srv://snaplink:snaplink2004@cluster0.mqcdswo.mongodb.net/url_shortener?retryWrites=true&w=majority` |
+| `MONGODB_URI` | `mongodb+srv://snaplink:PASSWORD@cluster0.mqcdswo.mongodb.net/url_shortener?retryWrites=true&w=majority` |
 | `REDIS_URL` | Get from Upstash (see UPSTASH_REDIS_SETUP.md) |
 | `JWT_SECRET` | Generate: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `GOOGLE_CLIENT_ID` | Your Google OAuth ID |
@@ -133,7 +133,7 @@ Copy these and save them!
 ### MongoDB Not Connecting
 - [ ] MongoDB Atlas Network Access: Allow `0.0.0.0/0`
 - [ ] MONGODB_URI includes database name: `.../url_shortener`
-- [ ] Password is correct: `snaplink2004`
+- [ ] Password is correct in `.env` file
 
 ### Redis Not Connecting
 - [ ] REDIS_URL is in Redis protocol format (not REST)
