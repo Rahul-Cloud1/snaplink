@@ -1,0 +1,52 @@
+{
+  "services": [
+    {
+      "name": "api",
+      "source": {
+        "type": "github",
+        "repo": "YOUR_GITHUB_USERNAME/url-shortener"
+      },
+      "buildCommand": "npm install --prefix server",
+      "startCommand": "npm start --prefix server",
+      "port": 3000,
+      "envVars": {
+        "NODE_ENV": "production",
+        "PORT": "3000",
+        "MONGODB_URI": "${{ secrets.MONGODB_URI }}",
+        "REDIS_URL": "${{ secrets.REDIS_URL }}",
+        "JWT_SECRET": "${{ secrets.JWT_SECRET }}",
+        "GOOGLE_CLIENT_ID": "${{ secrets.GOOGLE_CLIENT_ID }}",
+        "GOOGLE_CLIENT_SECRET": "${{ secrets.GOOGLE_CLIENT_SECRET }}",
+        "CLIENT_URL": "${{ services.client.url }}"
+      }
+    },
+    {
+      "name": "worker",
+      "source": {
+        "type": "github",
+        "repo": "YOUR_GITHUB_USERNAME/url-shortener"
+      },
+      "buildCommand": "npm install --prefix server",
+      "startCommand": "npm run worker --prefix server",
+      "envVars": {
+        "NODE_ENV": "production",
+        "MONGODB_URI": "${{ secrets.MONGODB_URI }}",
+        "REDIS_URL": "${{ secrets.REDIS_URL }}",
+        "JWT_SECRET": "${{ secrets.JWT_SECRET }}"
+      }
+    },
+    {
+      "name": "client",
+      "source": {
+        "type": "github",
+        "repo": "YOUR_GITHUB_USERNAME/url-shortener"
+      },
+      "buildCommand": "npm run build --prefix client",
+      "startCommand": "npx serve -s client/dist -l 3000",
+      "port": 3000,
+      "envVars": {
+        "VITE_API_URL": "${{ services.api.url }}"
+      }
+    }
+  ]
+}
