@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { Worker } from 'bullmq';
 import geoip from 'geoip-lite';
 import mongoose from 'mongoose';
-import UAParser from 'ua-parser-js';
+import { UAParser } from 'ua-parser-js';
 import Click from '../models/Click.js';
 import Link from '../models/Link.js';
 import { redis } from '../lib/redis.js';
@@ -29,14 +29,15 @@ const worker = new Worker(
   async (job) => {
     const { slug, ip, userAgent, referrer } = job.data;
     const geo = geoip.lookup(ip);
-    const ua = UAParser(userAgent);
+    const ua = new UAParser(userAgent);
+    const uaResult = ua.getResult();
 
     await Click.create({
       slug,
       country: geo?.country || 'Unknown',
       city: geo?.city || 'Unknown',
-      device: normalizeDevice(ua.device.type),
-      browser: ua.browser.name || 'Unknown',
+      device: normalizeDevice(uaResult?.device?.type),
+      browser: uaResult?.browser?.name || 'Unknown',
       referrer: parseReferrer(referrer),
       ip,
       timestamp: new Date()
