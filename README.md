@@ -1,6 +1,11 @@
-# URL Shortener with Analytics Dashboard
+# Snaplink — URL Shortener with Analytics Dashboard
 
 A production-grade URL shortener inspired by Bitly, built to demonstrate a complete SaaS workflow with fast redirects, analytics, auth, abuse prevention, and modern React UI.
+
+**🔗 Live Demo:** [snaplink-pink.vercel.app](https://snaplink-pink.vercel.app/)
+**⚙️ Live API:** [peaceful-luck-production-9c6d.up.railway.app](https://peaceful-luck-production-9c6d.up.railway.app/)
+
+> Note: the backend runs on Railway's free tier and may take a few seconds to respond on the first request after inactivity.
 
 ## Why this project stands out
 
@@ -34,6 +39,7 @@ This application is designed to be interview-ready by combining:
 - Backend `/api/auth/google` endpoint for Google ID token verification
 - Automatic user creation when a Google account logs in for the first time
 - JWT-based session handling returned after social login
+- Deployed to production: frontend on Vercel, backend + worker on Railway
 
 ## Tech Stack
 
@@ -42,6 +48,7 @@ This application is designed to be interview-ready by combining:
 - Auth: JWT, bcrypt, Google OAuth
 - Frontend: React, Vite, React Router, Recharts, qrcode.react
 - Utilities: validator, geoip-lite, express-rate-limit
+- Infrastructure: MongoDB Atlas, Upstash Redis, Railway, Vercel
 
 ## Architecture highlights
 
@@ -149,14 +156,6 @@ DELETE /api/shorten/links/:slug
 GET /api/analytics/:slug?range=7d
 ```
 
-## Interview-friendly talking points
-
-- Implemented a full product-ready URL shortener with both password and Google OAuth login
-- Designed the system to prioritize redirect latency and separate analytics ingestion from the critical path
-- Used Redis and BullMQ to scale redirects and click tracking
-- Built a modern dashboard with charts, QR code generation, and a polished React experience
-- Added abuse prevention using rate limiting and anonymous ownership
-
 ## Future scaling ideas
 
 - Add a CDN or edge layer for ultra-fast redirect delivery
@@ -165,6 +164,3 @@ GET /api/analytics/:slug?range=7d
 - Add replay tooling for failed analytics jobs
 - Introduce IP hashing and GDPR-safe analytics storage
 
-## Resume-ready summary
-
-Production-ready URL shortener with Redis caching, BullMQ async analytics, JWT and Google OAuth authentication, and a React analytics dashboard that tracks clicks by geography, device, browser, and referrer.
